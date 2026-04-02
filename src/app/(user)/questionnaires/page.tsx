@@ -1,1 +1,5 @@
-export default function UserQuestionnairesPage() { return <div>User Questionnaires</div>; }
+import { redirect } from "next/navigation";
+
+export default function UserQuestionnairesPage() {
+    redirect("/dashboard/surveys");
+}

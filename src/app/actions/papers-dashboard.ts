@@ -4,25 +4,23 @@ import { query } from '@/lib/db';
 
 export async function getPaperDashboardStats() {
     try {
-        // 1. KPIs
-        const [
-            papersCountResult,
-            underReviewResult,
-            acceptedResult,
-            rejectedResult,
-            reviewersResult
-        ] = await Promise.all([
-            query(`SELECT COUNT(*) as count FROM papers WHERE status != 'draft'`) as unknown as any[],
-            query(`SELECT COUNT(*) as count FROM papers WHERE status = 'under_review'`) as unknown as any[],
-            query(`SELECT COUNT(*) as count FROM papers WHERE status = 'accepted'`) as unknown as any[],
-            query(`SELECT COUNT(*) as count FROM papers WHERE status = 'rejected'`) as unknown as any[],
+        // 1. KPIs — single aggregated query instead of 4 separate COUNTs
+        const [paperCountsResult, reviewersResult] = await Promise.all([
+            query(`
+                SELECT
+                    COUNT(CASE WHEN status != 'draft' THEN 1 END) as total,
+                    COUNT(CASE WHEN status = 'under_review' THEN 1 END) as under_review,
+                    COUNT(CASE WHEN status = 'accepted' THEN 1 END) as accepted,
+                    COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
+                FROM papers
+            `) as unknown as any[],
             query(`SELECT COUNT(*) as count FROM reviewers WHERE is_active = TRUE`) as unknown as any[]
         ]);
 
-        const totalPapers = papersCountResult[0]?.count || 0;
-        const underReview = underReviewResult[0]?.count || 0;
-        const accepted = acceptedResult[0]?.count || 0;
-        const rejected = rejectedResult[0]?.count || 0;
+        const totalPapers = paperCountsResult[0]?.total || 0;
+        const underReview = paperCountsResult[0]?.under_review || 0;
+        const accepted = paperCountsResult[0]?.accepted || 0;
+        const rejected = paperCountsResult[0]?.rejected || 0;
         const activeReviewers = reviewersResult[0]?.count || 0;
 
         const totalDecided = accepted + rejected;

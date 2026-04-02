@@ -2,6 +2,7 @@ import { PublicNavbar } from "@/components/public-navbar";
 import { PublicFooter } from "@/components/public-footer";
 import { AiChatWidget } from "@/components/ai-chat-widget";
 import { getPageBySlug } from "@/lib/website";
+import { getSystemSettings } from "@/app/actions/settings";
 
 export default async function PublicLayout({
     children,
@@ -9,8 +10,11 @@ export default async function PublicLayout({
     children: React.ReactNode;
 }) {
     // Fetch dynamic layout
-    const headerPage = await getPageBySlug('system-header');
-    const footerPage = await getPageBySlug('system-footer');
+    const [headerPage, footerPage, settings] = await Promise.all([
+        getPageBySlug('system-header'),
+        getPageBySlug('system-footer'),
+        getSystemSettings(),
+    ]);
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
@@ -29,7 +33,7 @@ export default async function PublicLayout({
             ) : (
                 <PublicFooter />
             )}
-            <AiChatWidget />
+            {settings.chatbot_enabled !== false && <AiChatWidget chatbotName={settings.chatbot_name || 'AI Assistant'} />}
         </div>
     );
 }

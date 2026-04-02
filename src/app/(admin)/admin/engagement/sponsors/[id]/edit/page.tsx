@@ -26,7 +26,6 @@ export default async function EditSponsorPage({
             <AdminPageHeader
                 title="Edit Sponsor"
                 description={`Update details for ${sponsor.name_en}`}
-                showBackButton
             />
 
             <div className="mt-8 space-y-12 max-w-5xl mx-auto">

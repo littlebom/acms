@@ -7,7 +7,6 @@ export default function AddSponsorPage() {
             <AdminPageHeader
                 title="Add New Sponsor"
                 description="Register a new company as a conference sponsor."
-                showBackButton
             />
             <div className="mt-8 max-w-5xl mx-auto">
                 <SponsorForm mode="add" />

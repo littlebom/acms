@@ -2,6 +2,7 @@
 
 import { query } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { REGISTRATION_BASE_JOIN } from '@/lib/sql-fragments';
 
 interface CheckInResult {
     success: boolean;
@@ -68,10 +69,8 @@ export async function checkInUser(registrationId: number): Promise<CheckInResult
 
         // Fetch updated data to confirm
         const updated = await query(
-            `SELECT r.*, u.first_name, u.last_name, t.name as ticket_name 
-             FROM registrations r
-             JOIN users u ON r.user_id = u.id
-             JOIN tickets t ON r.ticket_id = t.id
+            `SELECT r.*, u.first_name, u.last_name, t.name as ticket_name
+             ${REGISTRATION_BASE_JOIN}
              WHERE r.id = ?`,
             [registrationId]
         ) as any[];

@@ -22,7 +22,17 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 3. Redirect authenticated users away from login/register
+    // 3. Protect Reviewer Routes
+    if (pathname.startsWith("/reviewer")) {
+        if (!session) {
+            return NextResponse.redirect(new URL("/login", request.url));
+        }
+        if (!["reviewer", "admin", "chair"].includes(session.role)) {
+            return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+    }
+
+    // 4. Redirect authenticated users away from login/register
     if ((pathname === "/login" || pathname === "/register") && session) {
         if (session.role === "admin") {
             return NextResponse.redirect(new URL("/admin", request.url));
@@ -38,6 +48,7 @@ export const config = {
         "/admin/:path*",
         "/dashboard/:path*",
         "/register-conference/:path*",
+        "/reviewer/:path*",
         "/login",
         "/register",
     ],

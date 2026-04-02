@@ -1,26 +1,22 @@
 'use server';
 
 import { query } from '@/lib/db';
+import { fillMissingDates } from '@/lib/date-utils';
+import { getRevenueTotal } from '@/lib/stats-utils';
 
 export async function getConferenceStats() {
     try {
         // 1. KPIs
         const [
-            revenueResult,
+            totalRevenue,
             ticketsSoldResult,
             checkedInResult
         ] = await Promise.all([
-            query(`
-                SELECT SUM(t.price) as total
-                FROM registrations r
-                JOIN tickets t ON r.ticket_id = t.id
-                WHERE r.status = 'paid'
-            `) as unknown as any[],
+            getRevenueTotal(),
             query(`SELECT COUNT(*) as count FROM registrations WHERE status = 'paid'`) as unknown as any[],
             query(`SELECT COUNT(*) as count FROM registrations WHERE checked_in_at IS NOT NULL`) as unknown as any[]
         ]);
 
-        const totalRevenue = revenueResult[0]?.total || 0;
         const ticketsSold = ticketsSoldResult[0]?.count || 0;
         const checkedInCount = checkedInResult[0]?.count || 0;
 
@@ -79,22 +75,3 @@ export async function getConferenceStats() {
     }
 }
 
-function fillMissingDates(data: any[], days: number) {
-    const result = [];
-    const today = new Date();
-    const dataMap = new Map(data.map(item => {
-        const dateStr = item.date instanceof Date ? item.date.toISOString().split('T')[0] : item.date;
-        return [dateStr, item.count];
-    }));
-
-    for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(today.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        result.push({
-            date: dateStr,
-            count: dataMap.get(dateStr) || 0
-        });
-    }
-    return result;
-}

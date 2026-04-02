@@ -410,19 +410,3 @@ export async function getSiteSetting(key: string) {
     return settings.length > 0 ? settings[0].setting_value : null;
 }
 
-export async function updateSiteSettings(settings: { key: string; value: string }[]) {
-    try {
-        for (const setting of settings) {
-            await query(
-                'UPDATE site_settings SET setting_value = ? WHERE setting_key = ?',
-                [setting.value, setting.key]
-            );
-        }
-        revalidatePath('/admin/website/settings');
-        revalidatePath('/');
-        return { success: true };
-    } catch (error) {
-        console.error('Update site settings error:', error);
-        return { error: 'Failed to update settings' };
-    }
-}

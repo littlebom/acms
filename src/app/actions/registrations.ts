@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { query } from '@/lib/db';
+import { REGISTRATION_BASE_JOIN } from '@/lib/sql-fragments';
 
 // --- Tickets ---
 
@@ -128,9 +129,7 @@ export async function getRegistrations(eventId?: number) {
                    WHEN r.approved_by IS NOT NULL THEN CONCAT(approver.first_name, ' ', approver.last_name)
                    ELSE NULL 
                END as approver_name
-        FROM registrations r
-        JOIN users u ON r.user_id = u.id
-        JOIN tickets t ON r.ticket_id = t.id
+        ${REGISTRATION_BASE_JOIN}
         LEFT JOIN users approver ON r.approved_by = approver.id
         WHERE 1=1
     `;

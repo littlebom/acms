@@ -109,17 +109,6 @@ export async function deleteQuestionnaire(id: number) {
     }
 }
 
-export async function toggleQuestionnaireActive(id: number, isActive: boolean) {
-    try {
-        await query('UPDATE questionnaires SET is_active = ? WHERE id = ?', [isActive, id]);
-        revalidatePath('/admin/questions');
-        return { success: true };
-    } catch (error) {
-        console.error('Toggle questionnaire error:', error);
-        return { error: 'Failed to toggle questionnaire' };
-    }
-}
-
 // --- Questions ---
 
 export interface Question {
@@ -205,22 +194,6 @@ export async function deleteQuestion(id: number, questionnaireId?: number) {
     }
 }
 
-export async function reorderQuestions(questionnaireId: number, orderedIds: number[]) {
-    try {
-        for (let i = 0; i < orderedIds.length; i++) {
-            await query(
-                'UPDATE questions SET display_order = ? WHERE id = ? AND questionnaire_id = ?',
-                [i, orderedIds[i], questionnaireId]
-            );
-        }
-        revalidatePath(`/admin/questions/${questionnaireId}`);
-        return { success: true };
-    } catch (error) {
-        console.error('Reorder questions error:', error);
-        return { error: 'Failed to reorder questions' };
-    }
-}
-
 // --- Responses & Answers ---
 
 export interface QuestionnaireResponse {
@@ -263,21 +236,6 @@ export async function getQuestionnaireResponses(questionnaireId: number) {
         user_name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : 'Anonymous',
         user_email: r.email || null
     }));
-}
-
-export async function getResponseAnswers(responseId: number) {
-    const answers = await query(
-        `SELECT a.*, q.question_text, q.type as question_type
-         FROM answers a
-         JOIN questions q ON a.question_id = q.id
-         WHERE a.session_id = (
-             SELECT session_token FROM questionnaire_responses WHERE id = ?
-         )
-         ORDER BY q.display_order ASC`,
-        [responseId]
-    ) as (Answer & { question_text: string; question_type: string })[];
-
-    return answers;
 }
 
 export async function submitSurveyResponse(

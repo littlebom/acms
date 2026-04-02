@@ -81,9 +81,10 @@ const sidebarItems = [
 interface AdminSidebarProps {
     events: any[];
     selectedEventId: number;
+    showAcademic?: boolean;
 }
 
-export function AdminSidebar({ events, selectedEventId }: AdminSidebarProps) {
+export function AdminSidebar({ events, selectedEventId, showAcademic = true }: AdminSidebarProps) {
     const pathname = usePathname();
     const isCheckInPage = pathname === '/admin/conference/check-in';
     const isBuilderPage = pathname?.startsWith('/admin/website/builder');
@@ -107,7 +108,9 @@ export function AdminSidebar({ events, selectedEventId }: AdminSidebarProps) {
 
                 {/* ... existing loop ... */}
 
-                {sidebarItems.map((group, i) => (
+                {sidebarItems
+                    .filter((group) => showAcademic || group.title !== 'Academic')
+                    .map((group, i) => (
                     <div key={i} className="mb-6 px-4">
                         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                             {group.title}

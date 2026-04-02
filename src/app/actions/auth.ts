@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db';
 import { createSession, deleteSession } from '@/lib/auth';
+import { emailExists } from '@/lib/user-utils';
 
 interface User {
     id: number;
@@ -45,7 +46,7 @@ export async function login(formData: FormData) {
         await createSession(user.id, user.email, user.role);
 
         // Redirect based on role
-        if (user.role === 'admin') {
+        if (user.role === 'admin' || user.role === 'super_admin') {
             redirect('/admin');
         } else {
             redirect('/dashboard');
@@ -88,12 +89,8 @@ export async function register(formData: FormData) {
 
     try {
         // Check if user exists
-        const existing = await query(
-            'SELECT id FROM users WHERE email = ?',
-            [email]
-        ) as any[];
-
-        if (existing && existing.length > 0) {
+        const existingUserId = await emailExists(email);
+        if (existingUserId !== null) {
             return { error: 'อีเมลนี้ถูกใช้งานแล้ว' };
         }
 

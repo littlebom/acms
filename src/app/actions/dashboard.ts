@@ -1,6 +1,8 @@
 'use server';
 
 import { query } from '@/lib/db';
+import { fillMissingDates } from '@/lib/date-utils';
+import { getRevenueTotal } from '@/lib/stats-utils';
 
 export async function getDashboardStats(eventId?: number) {
     try {
@@ -31,14 +33,8 @@ export async function getDashboardStats(eventId?: number) {
             `, params)
         ]);
 
-        // 2. Total Revenue (Join registrations and tickets)
-        const revenueResult = await query(`
-            SELECT SUM(t.price) as total
-            FROM registrations r
-            JOIN tickets t ON r.ticket_id = t.id
-            WHERE r.status = 'paid' ${ticketFilter}
-        `, params) as any[];
-        const totalRevenue = revenueResult[0]?.total || 0;
+        // 2. Total Revenue
+        const totalRevenue = await getRevenueTotal(ticketFilter, params);
 
         // 3. Registration Trend (Last 30 Days)
         // We need to filter by event here too
@@ -100,23 +96,3 @@ export async function getDashboardStats(eventId?: number) {
     }
 }
 
-function fillMissingDates(data: any[], days: number) {
-    const result = [];
-    const today = new Date();
-    const dataMap = new Map(data.map(item => {
-        // Ensure item.date is a string 'YYYY-MM-DD'
-        const dateStr = item.date instanceof Date ? item.date.toISOString().split('T')[0] : item.date;
-        return [dateStr, item.count];
-    }));
-
-    for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(today.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        result.push({
-            date: dateStr,
-            count: dataMap.get(dateStr) || 0
-        });
-    }
-    return result;
-}

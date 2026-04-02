@@ -6,9 +6,9 @@ declare global {
 
 
 const poolConfig = {
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || '127.0.0.1',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'KKiabkob',
+    password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'acms_db',
     waitForConnections: true,
     connectionLimit: 10,

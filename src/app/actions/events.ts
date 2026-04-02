@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { query } from '@/lib/db';
 
+const EVENT_SELECT = 'SELECT *, name_en as title FROM events';
+
 export interface EventData {
     id: number;
     title: string; // Alias for name_en for frontend compatibility
@@ -36,15 +38,14 @@ export interface EventData {
 
 // Get all events for the list
 export async function getEvents() {
-    const events = await query('SELECT *, name_en as title FROM events ORDER BY start_date DESC') as EventData[];
+    const events = await query(`${EVENT_SELECT} ORDER BY start_date DESC`) as EventData[];
     return events;
 }
 
 // Get all events available for registration (future events)
 export async function getAvailableEvents() {
     return await query(`
-        SELECT *, name_en as title 
-        FROM events 
+        ${EVENT_SELECT}
         WHERE (registration_deadline IS NULL OR registration_deadline >= CURDATE())
         AND (end_date IS NULL OR end_date >= CURDATE())
         ORDER BY start_date ASC
@@ -53,7 +54,7 @@ export async function getAvailableEvents() {
 
 // Get a single event (by ID or the active one)
 export async function getEvent(id?: number) {
-    let sql = 'SELECT *, name_en as title FROM events';
+    let sql = EVENT_SELECT;
     const params: any[] = [];
 
     if (id) {
@@ -68,7 +69,7 @@ export async function getEvent(id?: number) {
 
     // Fallback: If no active event found, return the latest one
     if (!id && events.length === 0) {
-        const latest = await query('SELECT *, name_en as title FROM events ORDER BY id DESC LIMIT 1') as EventData[];
+        const latest = await query(`${EVENT_SELECT} ORDER BY id DESC LIMIT 1`) as EventData[];
         return latest.length > 0 ? latest[0] : null;
     }
 
@@ -76,7 +77,7 @@ export async function getEvent(id?: number) {
 }
 
 export async function getEventBySlug(slug: string) {
-    const events = await query('SELECT *, name_en as title FROM events WHERE slug = ?', [slug]) as EventData[];
+    const events = await query(`${EVENT_SELECT} WHERE slug = ?`, [slug]) as EventData[];
     return events.length > 0 ? events[0] : null;
 }
 

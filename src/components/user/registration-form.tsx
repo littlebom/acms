@@ -432,6 +432,7 @@ export function UserRegistrationForm({
                                         first_name: currentRegistration.first_name || user?.first_name || 'Guest',
                                         last_name: currentRegistration.last_name || user?.last_name || '',
                                         email: currentRegistration.email || user?.email || '',
+                                        profile_image: currentRegistration.profile_image,
                                         organization: Object.entries(answers).find(([qId]) => {
                                             const q = questions.find(q => q.id === parseInt(qId));
                                             return q && (q.question_text.toLowerCase().includes('institution') || q.question_text.toLowerCase().includes('workplace'));

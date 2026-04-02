@@ -43,9 +43,13 @@ interface TiptapEditorProps {
     content: string;
     onChange: (html: string) => void;
     placeholder?: string;
+    /** "full" = all features (tables, youtube, fonts). "simple" = basic formatting only. */
+    variant?: 'full' | 'simple';
 }
 
-export function TiptapEditor({ content, onChange, placeholder = 'Write something...' }: TiptapEditorProps) {
+export function TiptapEditor({ content, onChange, placeholder = 'Write something...', variant = 'full' }: TiptapEditorProps) {
+    const isSimple = variant === 'simple';
+
     const editor = useEditor({
         immediatelyRender: false,
         extensions: [
@@ -124,26 +128,29 @@ export function TiptapEditor({ content, onChange, placeholder = 'Write something
     return (
         <div className="border border-slate-200 rounded-lg overflow-hidden flex flex-col bg-white">
             <div className="border-b border-slate-200 bg-slate-50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
-                {/* Font Selection */}
-                <div className="mr-1">
-                    <Select
-                        value={editor.getAttributes('textStyle').fontFamily || 'Inter'}
-                        onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
-                    >
-                        <SelectTrigger className="h-8 w-[130px] text-xs bg-white border-slate-200">
-                            <SelectValue placeholder="Font" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Inter">Inter (Default)</SelectItem>
-                            <SelectItem value="Sarabun">Sarabun</SelectItem>
-                            <SelectItem value="Comic Sans MS, Comic Sans">Comic Sans</SelectItem>
-                            <SelectItem value="serif">Serif</SelectItem>
-                            <SelectItem value="monospace">Monospace</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="h-6 w-px bg-slate-200 mx-1" />
+                {/* Font Selection — full variant only */}
+                {!isSimple && (
+                    <>
+                        <div className="mr-1">
+                            <Select
+                                value={editor.getAttributes('textStyle').fontFamily || 'Inter'}
+                                onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
+                            >
+                                <SelectTrigger className="h-8 w-[130px] text-xs bg-white border-slate-200">
+                                    <SelectValue placeholder="Font" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Inter">Inter (Default)</SelectItem>
+                                    <SelectItem value="Sarabun">Sarabun</SelectItem>
+                                    <SelectItem value="Comic Sans MS, Comic Sans">Comic Sans</SelectItem>
+                                    <SelectItem value="serif">Serif</SelectItem>
+                                    <SelectItem value="monospace">Monospace</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="h-6 w-px bg-slate-200 mx-1" />
+                    </>
+                )}
 
                 {/* Text Formatting */}
                 <div className="flex bg-white rounded-md border border-slate-200 shadow-sm p-1 gap-0.5">
@@ -271,37 +278,42 @@ export function TiptapEditor({ content, onChange, placeholder = 'Write something
                     <Button variant="ghost" size="sm" onClick={addImage}>
                         <ImageIcon className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={addYoutube}>
-                        <YoutubeIcon className="h-4 w-4" />
-                    </Button>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className={editor.isActive('table') ? 'bg-slate-200' : ''}>
-                                <TableIcon className="h-4 w-4" />
+                    {/* YouTube & Table — full variant only */}
+                    {!isSimple && (
+                        <>
+                            <Button variant="ghost" size="sm" onClick={addYoutube}>
+                                <YoutubeIcon className="h-4 w-4" />
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
-                                Insert Table
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().addColumnAfter().run()} disabled={!editor.can().addColumnAfter()}>
-                                Add Column After
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().deleteColumn().run()} disabled={!editor.can().deleteColumn()}>
-                                Delete Column
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().addRowAfter().run()} disabled={!editor.can().addRowAfter()}>
-                                Add Row After
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().deleteRow().run()} disabled={!editor.can().deleteRow()}>
-                                Delete Row
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => editor.chain().focus().deleteTable().run()} disabled={!editor.can().deleteTable()}>
-                                Delete Table
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className={editor.isActive('table') ? 'bg-slate-200' : ''}>
+                                        <TableIcon className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
+                                        Insert Table
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().addColumnAfter().run()} disabled={!editor.can().addColumnAfter()}>
+                                        Add Column After
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().deleteColumn().run()} disabled={!editor.can().deleteColumn()}>
+                                        Delete Column
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().addRowAfter().run()} disabled={!editor.can().addRowAfter()}>
+                                        Add Row After
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().deleteRow().run()} disabled={!editor.can().deleteRow()}>
+                                        Delete Row
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => editor.chain().focus().deleteTable().run()} disabled={!editor.can().deleteTable()}>
+                                        Delete Table
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex-1" />

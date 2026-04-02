@@ -48,8 +48,8 @@ export default async function EventRegistrationPage({ params }: { params: { id: 
         <div className="container mx-auto max-w-5xl py-8">
             {/* Back Button */}
             <div className="mb-6">
-                <a href="/register-conference" className="inline-flex items-center text-sm text-slate-500 hover:text-blue-600">
-                    ← Back to Events
+                <a href={`/dashboard/profile/${session?.userId}?tab=conference`} className="inline-flex items-center text-sm text-slate-500 hover:text-blue-600">
+                    ← Back to Profile
                 </a>
             </div>
 

@@ -4,11 +4,13 @@ import { ArrowRight, Calendar, Globe } from "lucide-react";
 import { getEvent, getEventSpeakers } from "@/app/actions/events";
 import { getSchedule, getSessions, type Session } from "@/app/actions/schedule";
 import { getNews } from "@/app/actions/news";
+import { getSponsors } from "@/app/actions/sponsors";
 import { EventHero } from "@/components/public/event-hero";
 import { ScheduleViewer } from "@/components/public/schedule-viewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { VideoPopup } from "@/components/public/video-popup";
+import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +55,10 @@ export default async function HomePage() {
     // Fetch News
     const { news } = await getNews(undefined, true);
     const latestNews = news?.slice(0, 4) || [];
+
+    // Fetch Sponsors (with logo only, max 4)
+    const allSponsors = await getSponsors();
+    const featuredSponsors = allSponsors.filter((s) => s.logo_url).slice(0, 4);
 
     return (
         <div className="flex flex-col">
@@ -182,6 +188,58 @@ export default async function HomePage() {
                                         <ArrowRight className="w-4 h-4" />
                                     </div>
                                 </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Sponsors Section */}
+            {featuredSponsors.length > 0 && (
+                <section className="py-16 bg-slate-50 border-t border-slate-200">
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col items-center text-center mb-10">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Supported By</p>
+                            <h2 className="text-2xl font-bold text-slate-900">Our Sponsors</h2>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                            {featuredSponsors.map((sponsor) => {
+                                const cardClass = "group flex items-center justify-center p-5 bg-white rounded-lg border border-slate-200 h-36 transition-all duration-300";
+                                const imageEl = (
+                                    <div className="relative w-full h-24">
+                                        <Image
+                                            src={sponsor.logo_url!}
+                                            alt={sponsor.name_en}
+                                            fill
+                                            sizes="(max-width: 768px) 45vw, 22vw"
+                                            className="object-contain [filter:grayscale(50%)] group-hover:[filter:grayscale(0%)] transition-all duration-300"
+                                        />
+                                    </div>
+                                );
+                                return sponsor.website_url ? (
+                                    <a
+                                        key={sponsor.id}
+                                        href={sponsor.website_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`${cardClass} hover:border-slate-300 hover:shadow-md`}
+                                        title={sponsor.name_en}
+                                    >
+                                        {imageEl}
+                                    </a>
+                                ) : (
+                                    <div key={sponsor.id} className={cardClass} title={sponsor.name_en}>
+                                        {imageEl}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex justify-center mt-10">
+                            <Link href="/sponsors" className="text-sm font-medium text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5">
+                                View All Sponsors
+                                <ArrowRight className="h-3.5 w-3.5" />
                             </Link>
                         </div>
                     </div>

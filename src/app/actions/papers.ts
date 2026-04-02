@@ -138,13 +138,6 @@ export async function getPaperFiles(paperId: number) {
     ) as PaperFile[];
 }
 
-export async function getMyPapers() {
-    const session = await getSession();
-    if (!session) return [];
-
-    return await getPapers({ submitter_id: session.userId });
-}
-
 // =====================================================
 // Create Paper (Submit)
 // =====================================================
@@ -282,38 +275,6 @@ export async function updatePaper(formData: FormData) {
     } catch (error) {
         console.error('Update paper error:', error);
         return { error: 'Failed to update paper' };
-    }
-}
-
-// =====================================================
-// Submit Paper (Change status from draft to submitted)
-// =====================================================
-
-export async function submitPaper(paperId: number) {
-    const session = await getSession();
-    if (!session) {
-        return { error: 'Unauthorized' };
-    }
-
-    try {
-        const paper = await getPaper(paperId);
-        if (!paper || paper.submitter_id !== session.userId) {
-            return { error: 'Unauthorized' };
-        }
-        if (paper.status !== 'draft') {
-            return { error: 'Paper already submitted' };
-        }
-
-        await query(
-            'UPDATE papers SET status = ?, submitted_at = NOW() WHERE id = ?',
-            ['submitted', paperId]
-        );
-
-        revalidatePath('/my-submissions');
-        return { success: true };
-    } catch (error) {
-        console.error('Submit paper error:', error);
-        return { error: 'Failed to submit paper' };
     }
 }
 

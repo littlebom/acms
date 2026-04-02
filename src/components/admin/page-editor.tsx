@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { TiptapEditor } from "@/components/admin/tiptap-editor";
 import { createPage, updatePage, type Page } from "@/app/actions/website";
 
 interface PageEditorProps {
@@ -175,7 +175,8 @@ export function PageEditor({ page }: PageEditorProps) {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Content (English)</Label>
-                                        <RichTextEditor
+                                        <TiptapEditor
+                                            variant="simple"
                                             content={contentEn}
                                             onChange={setContentEn}
                                             placeholder="Write your content here..."
@@ -205,7 +206,8 @@ export function PageEditor({ page }: PageEditorProps) {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Content (ภาษาไทย)</Label>
-                                        <RichTextEditor
+                                        <TiptapEditor
+                                            variant="simple"
                                             content={contentTh}
                                             onChange={setContentTh}
                                             placeholder="เขียนเนื้อหาที่นี่..."

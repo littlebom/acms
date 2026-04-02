@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { query } from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { REGISTRATION_BASE_JOIN } from '@/lib/sql-fragments';
 import { redirect } from 'next/navigation';
 import { submitAnswers } from './questions';
 import { writeFile } from 'fs/promises';
@@ -12,12 +13,10 @@ export async function getUserRegistration(eventId?: number) {
     const session = await getSession();
     if (!session) return null;
 
-    let sql = `SELECT r.*, 
+    let sql = `SELECT r.*,
                 t.name as ticket_name, t.price as ticket_price, t.background_image as ticket_background_image,
-                u.title, u.first_name, u.last_name, u.email
-         FROM registrations r
-         JOIN tickets t ON r.ticket_id = t.id
-         JOIN users u ON r.user_id = u.id
+                u.title, u.first_name, u.last_name, u.email, u.profile_image
+         ${REGISTRATION_BASE_JOIN}
          WHERE r.user_id = ? AND r.status != 'cancelled'`;
 
     const params: any[] = [session.userId];

@@ -52,6 +52,17 @@ export interface SystemSettings {
     stripe_secret_key?: string;
     stripe_enabled?: boolean;
     payment_currency?: string;
+    // Chatbot Settings
+    chatbot_name?: string;
+    chatbot_enabled?: boolean;
+    chatbot_provider?: 'rule_based' | 'gemini' | 'openai';
+    chatbot_gemini_api_key?: string;
+    chatbot_gemini_model?: string;
+    chatbot_openai_api_key?: string;
+    chatbot_openai_model?: string;
+    chatbot_system_prompt?: string;
+    chatbot_context?: string;
+    chatbot_context_updated_at?: string;
 }
 
 export async function getSystemSettings(): Promise<SystemSettings> {
@@ -111,6 +122,19 @@ export async function getSystemSettings(): Promise<SystemSettings> {
                 stripe_secret_key: results[0].stripe_secret_key || '',
                 stripe_enabled: results[0].stripe_enabled || false,
                 payment_currency: results[0].payment_currency || 'THB',
+                // Chatbot Settings
+                chatbot_name: results[0].chatbot_name || 'AI Assistant',
+                chatbot_enabled: results[0].chatbot_enabled == null ? true : Number(results[0].chatbot_enabled) !== 0,
+                chatbot_provider: results[0].chatbot_provider || 'rule_based',
+                chatbot_gemini_api_key: results[0].chatbot_gemini_api_key || '',
+                chatbot_gemini_model: results[0].chatbot_gemini_model || 'gemini-2.0-flash',
+                chatbot_openai_api_key: results[0].chatbot_openai_api_key || '',
+                chatbot_openai_model: results[0].chatbot_openai_model || 'gpt-4o-mini',
+                chatbot_system_prompt: results[0].chatbot_system_prompt || '',
+                chatbot_context: results[0].chatbot_context || '',
+                chatbot_context_updated_at: results[0].chatbot_context_updated_at
+                    ? new Date(results[0].chatbot_context_updated_at).toISOString()
+                    : undefined,
             };
         }
     } catch (error) {
@@ -135,6 +159,11 @@ export async function getSystemSettings(): Promise<SystemSettings> {
         smtp_secure: 'tls',
         academic_review_type: 'double_blind',
         show_proceedings_menu: false,
+        chatbot_name: 'AI Assistant',
+        chatbot_enabled: true,
+        chatbot_provider: 'rule_based',
+        chatbot_gemini_model: 'gemini-2.0-flash',
+        chatbot_openai_model: 'gpt-4o-mini',
     };
 }
 

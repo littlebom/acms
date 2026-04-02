@@ -203,57 +203,12 @@ export interface UserNotification {
     priority: string;
 }
 
-export async function getUserNotifications(userId: number, unreadOnly: boolean = false) {
-    let sql = `
-        SELECT un.*, n.title, n.message, n.type, n.priority
-        FROM user_notifications un
-        JOIN notifications n ON un.notification_id = n.id
-        WHERE un.user_id = ?
-    `;
-    const params: any[] = [userId];
-
-    if (unreadOnly) {
-        sql += ' AND un.is_read = FALSE';
-    }
-
-    sql += ' ORDER BY un.created_at DESC LIMIT 50';
-
-    const notifications = await query(sql, params) as UserNotification[];
-    return notifications;
-}
-
 export async function getUnreadNotificationCount(userId: number) {
     const result = await query(
         'SELECT COUNT(*) as count FROM user_notifications WHERE user_id = ? AND is_read = FALSE',
         [userId]
     ) as { count: number }[];
     return result[0]?.count || 0;
-}
-
-export async function markNotificationAsRead(userNotificationId: number) {
-    try {
-        await query(
-            'UPDATE user_notifications SET is_read = TRUE, read_at = NOW() WHERE id = ?',
-            [userNotificationId]
-        );
-        return { success: true };
-    } catch (error) {
-        console.error('Mark as read error:', error);
-        return { error: 'Failed to mark as read' };
-    }
-}
-
-export async function markAllNotificationsAsRead(userId: number) {
-    try {
-        await query(
-            'UPDATE user_notifications SET is_read = TRUE, read_at = NOW() WHERE user_id = ? AND is_read = FALSE',
-            [userId]
-        );
-        return { success: true };
-    } catch (error) {
-        console.error('Mark all as read error:', error);
-        return { error: 'Failed to mark all as read' };
-    }
 }
 
 // --- Email Templates ---
@@ -292,52 +247,6 @@ export async function getEmailTemplate(id: number) {
         ...t,
         variables: t.variables ? (typeof t.variables === 'string' ? JSON.parse(t.variables) : t.variables) : []
     };
-}
-
-export async function createEmailTemplate(formData: FormData) {
-    const name = formData.get('name') as string;
-    const subject = formData.get('subject') as string;
-    const body = formData.get('body') as string;
-    const category = formData.get('category') as string || 'custom';
-    const variablesStr = formData.get('variables') as string || '';
-    const variables = variablesStr.split(',').map(v => v.trim()).filter(Boolean);
-
-    try {
-        await query(
-            `INSERT INTO email_templates (name, subject, body, variables, category)
-             VALUES (?, ?, ?, ?, ?)`,
-            [name, subject, body, JSON.stringify(variables), category]
-        );
-        revalidatePath('/admin/notifications');
-        return { success: true };
-    } catch (error) {
-        console.error('Create email template error:', error);
-        return { error: 'Failed to create email template' };
-    }
-}
-
-export async function updateEmailTemplate(id: number, formData: FormData) {
-    const name = formData.get('name') as string;
-    const subject = formData.get('subject') as string;
-    const body = formData.get('body') as string;
-    const category = formData.get('category') as string;
-    const variablesStr = formData.get('variables') as string || '';
-    const variables = variablesStr.split(',').map(v => v.trim()).filter(Boolean);
-    const is_active = formData.get('is_active') === 'on';
-
-    try {
-        await query(
-            `UPDATE email_templates SET 
-                name = ?, subject = ?, body = ?, variables = ?, category = ?, is_active = ?
-             WHERE id = ?`,
-            [name, subject, body, JSON.stringify(variables), category, is_active, id]
-        );
-        revalidatePath('/admin/notifications');
-        return { success: true };
-    } catch (error) {
-        console.error('Update email template error:', error);
-        return { error: 'Failed to update email template' };
-    }
 }
 
 export async function deleteEmailTemplate(id: number) {

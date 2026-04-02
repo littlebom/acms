@@ -1,6 +1,7 @@
 'use server';
 
 import { query } from '@/lib/db';
+import { REGISTRATION_BASE_JOIN } from '@/lib/sql-fragments';
 
 export interface Attendee {
     id: number;
@@ -37,9 +38,7 @@ export async function getAttendees(eventId?: number): Promise<Attendee[]> {
                 r.status,
                 r.registered_at,
                 r.checked_in_at
-            FROM registrations r
-            JOIN users u ON r.user_id = u.id
-            JOIN tickets t ON r.ticket_id = t.id
+            ${REGISTRATION_BASE_JOIN}
             JOIN events e ON t.event_id = e.id
             WHERE r.status != 'cancelled'
         `;

@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { getSession } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { emailExists } from '@/lib/user-utils';
 
 export interface User {
     id: number;
@@ -184,8 +185,8 @@ export async function createUser(formData: FormData) {
 
     try {
         // 1. Check if email exists
-        const existing = await query('SELECT id FROM users WHERE email = ?', [email]) as { id: number }[];
-        if (existing.length > 0) {
+        const existingUserId = await emailExists(email);
+        if (existingUserId !== null) {
             return { error: 'Email already exists' };
         }
 

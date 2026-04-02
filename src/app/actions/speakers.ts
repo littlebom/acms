@@ -5,6 +5,7 @@ import { query } from '@/lib/db';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import bcrypt from 'bcryptjs';
+import { emailExists } from '@/lib/user-utils';
 
 export interface SpeakerGroup {
     id: number;
@@ -259,8 +260,8 @@ export async function createSpeakerUser(formData: FormData) {
 
     try {
         // 1. Check if email exists
-        const existing = await query('SELECT id FROM users WHERE email = ?', [email]) as { id: number }[];
-        if (existing.length > 0) {
+        const existingUserId = await emailExists(email);
+        if (existingUserId !== null) {
             return { error: 'Email already exists' };
         }
 
@@ -311,8 +312,8 @@ export async function createSpeaker(formData: FormData) {
 
     try {
         // Check if email exists
-        const existing = await query('SELECT id FROM users WHERE email = ?', [email]) as any[];
-        if (existing.length > 0) {
+        const existingUserId = await emailExists(email);
+        if (existingUserId !== null) {
             return { error: 'Email already exists' };
         }
 

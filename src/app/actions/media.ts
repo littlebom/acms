@@ -159,31 +159,6 @@ export async function resizeImage(
 }
 
 /**
- * Crop image with specific coordinates
- */
-export async function cropImage(
-    inputPath: string,
-    outputPath: string,
-    cropData: { x: number; y: number; width: number; height: number }
-): Promise<{ success: boolean; error?: string }> {
-    try {
-        await sharp(inputPath)
-            .extract({
-                left: Math.round(cropData.x),
-                top: Math.round(cropData.y),
-                width: Math.round(cropData.width),
-                height: Math.round(cropData.height)
-            })
-            .toFile(outputPath);
-
-        return { success: true };
-    } catch (error) {
-        console.error('Crop error:', error);
-        return { success: false, error: 'Failed to crop image' };
-    }
-}
-
-/**
  * Create thumbnail from image
  */
 export async function createThumbnail(
