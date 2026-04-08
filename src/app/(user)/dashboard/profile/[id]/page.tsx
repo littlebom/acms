@@ -2,6 +2,7 @@ import { query } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { getActiveQuestionnaires } from '@/app/actions/questions';
 import { getAvailableEvents } from '@/app/actions/events';
+import { getSystemSettings } from '@/app/actions/settings';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -111,13 +112,17 @@ export default async function UserProfilePage({
     }
 
     // Fetch all data in parallel
-    const [user, registrations, papers, surveys, availableEvents] = await Promise.all([
+    const [user, registrations, papers, surveys, availableEvents, settings] = await Promise.all([
         getUser(targetUserId),
         getRegistrations(targetUserId),
         getPapers(targetUserId),
         getActiveQuestionnaires(undefined, targetUserId) as Promise<any[]>,
         getAvailableEvents() as Promise<any[]>,
+        getSystemSettings(),
     ]);
+
+    // Show Submissions tab only if proceedings is enabled AND user has papers
+    const showSubmissions = settings.show_proceedings_menu && papers.length > 0;
 
     if (!user) {
         return (
@@ -199,8 +204,10 @@ export default async function UserProfilePage({
                             {/* Stats Bar */}
                             <div className="flex flex-wrap justify-center md:justify-start gap-px mt-2 border-t border-white/10 pt-4 pb-5">
                                 {[
-                                    { icon: FileText,     label: 'Papers Submitted', value: submittedPapers },
-                                    { icon: CheckCircle2, label: 'Accepted',          value: acceptedPapers },
+                                    ...(showSubmissions ? [
+                                        { icon: FileText,     label: 'Papers Submitted', value: submittedPapers },
+                                        { icon: CheckCircle2, label: 'Accepted',          value: acceptedPapers },
+                                    ] : []),
                                     { icon: Ticket,       label: 'Conferences',       value: registrations.length },
                                     { icon: ClipboardList,label: 'Surveys Pending',   value: pendingSurveys,
                                       highlight: pendingSurveys > 0 },
@@ -231,6 +238,7 @@ export default async function UserProfilePage({
                 canEdit={canEdit}
                 isOwnProfile={isOwnProfile}
                 defaultTab={defaultTab}
+                showSubmissions={showSubmissions}
             />
         </div>
     );

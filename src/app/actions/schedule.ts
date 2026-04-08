@@ -348,8 +348,10 @@ export async function getScheduleAvailableSpeakers(scheduleId: number) {
 export async function createSession(formData: FormData) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const start_time = new Date(formData.get('start_time') as string);
-    const end_time = new Date(formData.get('end_time') as string);
+    // Pass datetime string directly to MySQL (DATETIME is timezone-naive)
+    // Using new Date() would shift the time based on server timezone (UTC vs local)
+    const start_time = (formData.get('start_time') as string).replace('T', ' ');
+    const end_time = (formData.get('end_time') as string).replace('T', ' ');
     const room = formData.get('room') as string;
     const type = formData.get('type') as string;
     const chair_id = formData.get('chair_id') ? parseInt(formData.get('chair_id') as string) : null;
@@ -406,8 +408,9 @@ export async function updateSession(formData: FormData) {
     const schedule_id = formData.get('schedule_id'); // Needed for revalidate
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const start_time = new Date(formData.get('start_time') as string);
-    const end_time = new Date(formData.get('end_time') as string);
+    // Pass datetime string directly to MySQL (DATETIME is timezone-naive)
+    const start_time = (formData.get('start_time') as string).replace('T', ' ');
+    const end_time = (formData.get('end_time') as string).replace('T', ' ');
     const room = formData.get('room') as string;
     const type = formData.get('type') as string;
     const chair_id = formData.get('chair_id') ? parseInt(formData.get('chair_id') as string) : null;

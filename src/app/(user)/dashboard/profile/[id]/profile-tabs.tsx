@@ -39,20 +39,23 @@ interface ProfileTabsProps {
     canEdit: boolean;
     isOwnProfile: boolean;
     defaultTab?: TabId;
+    showSubmissions?: boolean;
 }
 
 // ─── Main Tabs Component ───────────────────────────────────────────────────
 export function ProfileTabs({
-    user, registrations, papers, surveys, availableEvents, canEdit, isOwnProfile, defaultTab = 'profile',
+    user, registrations, papers, surveys, availableEvents, canEdit, isOwnProfile, defaultTab = 'profile', showSubmissions = true,
 }: ProfileTabsProps) {
-    const [activeTab, setActiveTab] = useState<TabId>(defaultTab);
+    // If default tab is papers but submissions hidden, fallback to profile
+    const safeDefault = (!showSubmissions && defaultTab === 'papers') ? 'profile' : defaultTab;
+    const [activeTab, setActiveTab] = useState<TabId>(safeDefault);
 
     const pendingSurveys = surveys.filter((s: any) => !s.is_completed).length;
 
     const tabs: { id: TabId; label: string; Icon: React.ElementType; badge?: number; badgeColor?: string }[] = [
         { id: 'profile',    label: 'Profile',    Icon: User },
         { id: 'conference', label: 'Conference',  Icon: Ticket,       badge: registrations.length || undefined },
-        { id: 'papers',     label: 'Submissions',  Icon: FileText,     badge: papers.length || undefined },
+        ...(showSubmissions ? [{ id: 'papers' as TabId, label: 'Submissions', Icon: FileText, badge: papers.length || undefined }] : []),
         { id: 'surveys',    label: 'Surveys',     Icon: ClipboardList, badge: pendingSurveys || undefined, badgeColor: 'bg-orange-100 text-orange-700' },
     ];
 

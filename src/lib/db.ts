@@ -17,6 +17,7 @@ const poolConfig = {
     queueLimit: 0,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    timezone: '+07:00',
 };
 
 let pool: mysql.Pool;
